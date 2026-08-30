@@ -22,7 +22,9 @@ export default function vitePluginJIT(importMap: Record<string, string> = {}): P
 			for (const key in importMap) {
 				try {
 					const resolved = require.resolve(importMap[key]);
-					resolvedImportMap[key] = normalizePath("/" + path.relative(root, resolved));
+					// build.ts 的 rollup entryFileNames 会把产物里包含 node_modules 的 chunk
+					// 统一改名成 external，这里的 importmap 必须做同样的替换，否则线上路径 404
+					resolvedImportMap[key] = normalizePath("/" + path.relative(root, resolved)).replace(/node_modules/g, "external");
 				} catch (e) {
 					resolvedImportMap[key] = importMap[key];
 				}
